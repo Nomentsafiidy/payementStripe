@@ -1,14 +1,36 @@
+const Stripe = require("stripe");
+const stripe = Stripe("sk_test_4eC39HqLyjWDarjtT1zdp7dc"); //stripe API key
 const express = require("express");
+
 const app = express();
 
-// route
-app.get("/", (req, res) => {
-  // Sending This is the home page! in the page
-  res.send("This is the home page!");
+app.use(express.static("./public"));
+
+const YOUR_DOMAIN = "http://localhost:4242";
+
+app.post("/create-checkout-session", async (req, res) => {
+  const session = await stripe.checkout.sessions.create({
+    //create session configue
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "Stubborn Attachments",
+            images: ["https://i.imgur.com/EHyR2nP.png"],
+          },
+          unit_amount: 2000,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+    success_url: `${YOUR_DOMAIN}/success.html`,
+    cancel_url: `${YOUR_DOMAIN}/cancel.html`,
+  });
+  console.log("dfsfds", session.payment_status);
+  res.json({ id: session.id });
 });
 
-// Listening to the port
-let PORT = 3000;
-app.listen(PORT);
-
-// FINISH!
+app.listen(4242, () => console.log("Running on port 4242"));
